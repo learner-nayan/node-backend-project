@@ -1,4 +1,3 @@
-import cookieParser from "cookie-parser";
 import dotenv from "dotenv"
 dotenv.config({path: '../.env'})
 
@@ -24,3 +23,10 @@ app.use(express.static('public'))
 app.use(cookieParser())
 
 //routes have: (err, req, res, next)
+
+//routes import
+import userRouter from './routes/user.routes.js'
+
+app.use('/api/v1/users', userRouter)
+
+export {app}

@@ -1,6 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 
-import { Video } from "./videos.model";
+import { Video } from "./videos.model.js";
 
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
@@ -25,6 +25,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
         trim: true,
+        index: true
     },
     avatar:{
         type: String, //cloudinary
@@ -35,30 +36,31 @@ const userSchema = new Schema({
     },
     password:{
         type: String,
-        required: true,
+        required: [true, "Password is required"],
         trim: true,
     },
     refreshToken:{
         type: String,
-        required: true,
         trim: true,
     },
-    watchHistory:{
+    watchHistory:[
+        {
         type: mongoose.Types.ObjectId,
         ref: "Video"
-    },
+        }
+    ],
 },{
     timestamps: true
 })
 
-userSchema.pre("save", function(next){
+userSchema.pre("save", async function(next){
     if(!this.isModified("password")) return next()
-    this.password = bcrypt(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){
-    return bcrypt.compare(password, this.password)
+    return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.generateAccessToken = function(){
@@ -88,4 +90,4 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-export const User = mongoose.Model("User", userSchema)
+export const User = mongoose.model("User", userSchema)
